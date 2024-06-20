@@ -2,12 +2,27 @@
   <div>
     <h1>
       Options Profit Calculator</h1>
-    <div class="row">
+    <div class="option-profit-calculator">
       <div class="col-mb-12 col-lg-12 strike-list">
+        <div class="strike-table-intro">
+          <p class="strike-list-para">Here is the list of Strike and how to calculate the option profit.</p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16" @click="showInstruction"> <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/> <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/> </svg>
+          <warningDia v-bind:visible.sync="showInstructionDialog" title="Warning" type="warning">
+            <template v-slot:header>
+              <h3>Options Profit Calculator Instructions</h3>
+            </template>
+            <template>
+              <p>some ....</p>
+            </template>
+            <template v-slot:footer>
+              <button @click="showInstructionDialog = false">Dismiss</button>
+            </template>
+          </warningDia>
+        </div>
         <table>
           <thead>
             <tr class="table-header">
-              <th >No. </th>
+              <th>No. </th>
               <th>Strike Price</th>
               <th>Type</th>
               <th>Bid</th>
@@ -37,7 +52,7 @@
           </tbody>
         </table>
       </div>
-      <div class="col-mb-6 col-lg-6 strike-visualization">
+      <div class="col-mb-12 col-lg-12 strike-visualization">
         <div class="sliders-container">
           <div class="slider-container">
             <input
@@ -65,20 +80,32 @@
               v-model="stepVal"
               min="0.1"
               max="10"
+              step="0.1"
               @input="updateStepVal($event.target.value)"
             />
             <span>Step Change: {{stepVal}}</span>
           </div> 
         </div>
-        <div>
+        <div class="generate-btn">
           <button @click="calculate">Generate</button>
+          <warningDia v-bind:visible.sync="showWarningDialog" title="Warning" type="warning">
+            <template v-slot:header>
+              <h3>Warning</h3>
+            </template>
+            <template>
+              <p>Please select At Leaset One Strike!</p>
+            </template>
+            <template v-slot:footer>
+              <button @click="showWarningDialog = false">Dismiss</button>
+            </template>
+          </warningDia>
         </div>
         <div class="chart-container">
           <Label v-if="loaded">Here is the Risk vs Reward Graph</Label>
           <line-chart v-if="loaded" :data="chartData" :options="options"></line-chart>
         </div>
       </div>
-      <div v-if="loaded" class="summary">
+      <div v-if="loaded" class="col-mb-12 col-lg-12 summary">
         <div class="card-container mb-4">
           <div class="card-header">
             <slot name="header">Max Profit:</slot>
@@ -115,22 +142,22 @@
         </div>
       </div>
      </div> 
-    
     </div>
 </template>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-import { Line } from 'vue-chartjs'
+import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale } from 'chart.js'
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale)
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import warningDia  from './warningDia.vue';
 export default {
   name: 'CodingChallenge',
   props: {
     optionsData: Array
   },
   components: {
-    LineChart: Line
+    LineChart: Line,
+    warningDia,
    },
   data(){
     const datasets = [];
@@ -154,6 +181,8 @@ export default {
       stepVal: 0.5,
       summaryArray: [],
       breakEvenPoints: [],
+      showWarningDialog: false,
+      showInstructionDialog: false,
   }}, 
   
   methods: {
@@ -282,11 +311,8 @@ export default {
       
     },
     calculate(){
-      if (!this.optionsData.filter(option => option.checked).length) {
-        new Promise((resolve) => {
-          alert("If you want to see the graph, please choose AT LEAST ONE STRIKE!");
-          resolve();
-        });
+      if (!this.optionsData.filter(option => option.checked).length){
+        this.showWarningDialog = true;
       }else{
         this.loaded = true;
         this.fetchedBreakEvenData();
@@ -294,13 +320,16 @@ export default {
         this.summary();
       }
     },
+    showInstruction(){
+      this.showInstructionDialog = true;
+    }
     
   },
 }
 </script>
 
 <style scoped>
-div{
+.option-profit-calculator{
   text-align: center;
 }
 h1 {
@@ -322,21 +351,13 @@ h1 {
   padding-right: 15px;
   padding-left: 15px;
 }
-@media (min-width: 768px) { /* Adjusts for medium screens and up */
-  .col-md-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-}
 
-@media (min-width: 992px) { /* Adjusts for large screens */
-  .col-lg-6 {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-}
 .strike-list{
   align-items: center;
+}
+
+.strike-list-para{
+  margin-bottom: auto;
 }
 table{
   font-family: sans-serif;;
@@ -344,7 +365,7 @@ table{
   border-collapse: collapse;
   width: 80%;
   color: white;
-  margin: 10% auto;
+  margin: 1% auto;
   background: -webkit-linear-gradient(left, rgb(127, 26, 26) 0%, rgb(137, 18, 18) 20%, rgb(137, 18, 18) 60%, rgb(43, 22, 136) 100%);
 }
 
@@ -385,6 +406,8 @@ button{
   border: 1px solid rgb(122, 132, 97);
   box-shadow: 2px 2px 4px 1px rgb(174, 174, 159);
 }
+
+
 .chart-container {
   width:80%;
   display: flex; 
