@@ -36,14 +36,6 @@
         default: 'default'
       }
     },
-    computed: {
-      dialogClass() {
-        return {
-          'dialog-warning': this.type === 'warning',
-          'dialog-default': this.type === 'default'
-        };
-      }
-    },
     methods: {
       close() {
         this.$emit('update:visible', false);
@@ -72,9 +64,12 @@
     color:black;
     background: white;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 1vmin;
     max-width: 100vmin;
     width: 100%;
+  }
+  .dialog-content p{
+    font-size: 3vmin;
   }
 
   .dialog-header,
@@ -83,16 +78,47 @@
     margin-bottom: 1vmin;
   }
   .dialog-header{
-    font-size: 3vmin;
+    font-size: 4vmin;
   }
-  .dialog-footer{
-    align-items: center;
+.dialog-footer{
+    align-items: center; 
     font-size: 1.5vmin;
-  }
+ } 
   
-  .dialog-warning {
-    border: 2px solid #0f1971;
-    background-color: #ccc;
+
+  .dialog-footer button{
+    text-align: center;
+    width: 10vw;
+    height: 4vh;
+    z-index: 999;
+    font-weight: bold;
+    color:#ccc;
+    padding: 1vmin;
+    outline: none;
+    border: none;
+    background-color: rgb(4, 133, 138);
+
+  }
+  .dialog-footer button:hover{
+    cursor: pointer;
+    animation: jelly 1s;
+    color:aliceblue;
+  }
+  @keyframes jelly {
+    0%,
+    100%{
+      transform: scale(1,1);
+    }
+    25%{
+      transform: scale(0.9,1.1);
+    }
+    55%{
+      transform: scale(1.1,0.9);
+    }
+    75%{
+      transform: scale(0.95,1.05);
+    }
+  
   }
 
   </style>

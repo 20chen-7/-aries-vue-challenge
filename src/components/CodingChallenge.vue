@@ -1,10 +1,12 @@
 <template>
   <div class="option-profit-calculator">
+    <!-- Here is the title and one information icon for instructions -->
     <div class="title-box">
       <h1>Options Profit Calculator
+        <!-- this is the information icon, click and warning dia model pop up -->
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-info-circle intro" viewBox="0 0 16 16" @click="showInstruction"> <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/> <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/> </svg>
       </h1>
-          <WarningDia v-bind:visible.sync="showInstructionDialog" title="Warning" type="warning">
+          <WarningDia v-bind:visible.sync="showInstructionDialog" title="Warning">
             <template v-slot:header>
               <h3>Options Profit Calculator Instructions</h3>
             </template>
@@ -14,17 +16,19 @@
                 between the two range.</p>
                 <p>3. After that, click the <strong>Generate</strong> button, you will get the chart based on your choices, and the <strong>Max Profit</strong>, <strong>Max Loss</strong> and <strong>Break Even Points</strong>
                         for each strike and total options profits will be shown in the bottom. </p>
+                <p>4. Finially, there are dashboard, showing the Max Profit, Max Loss, Break Even Points for each strike, and the total Results.</p>
             </template>
             <template v-slot:footer>
               <button @click="showInstructionDialog = false">Dismiss</button>
             </template>
           </WarningDia>
       <div class="strike-table-intro">
-          <p class="strike-list-para">Here is the list of Strike and how to calculate the option profit.</p>      
+          <p class="strike-intro-para">Here is the list of Strike and visualization of the option profit.</p>      
         </div>
     </div>
-    <div>
-      <div class="col-mb-12 col-lg-12 strike-list">
+    <!-- Here is the content of the calculator -->
+    <div class="content">
+      <div class="strike-list">
         <table>
           <thead>
             <tr class="table-header">
@@ -40,7 +44,7 @@
             </tr>
           </thead>
           <tbody class="table-body">
-            <tr v-for="(option, index) in optionsData" :key="index" @click="toggleCheckbox(index)">
+            <tr v-for="(option, index) in localOptionsData" :key="index" @click="toggleCheckbox(index)">
               <td>{{ index+1 }}</td>
               <td>{{ option.strike_price }}</td>
               <td>{{ option.type }}</td>
@@ -63,11 +67,12 @@
           </tbody>
         </table>
       </div>
-      <div class="col-mb-12 col-lg-12 strike-visualization">
+      <div class="strike-visualization">
         <div class="sliders-container">
           <div class="slider-container">
               <input
               type="range"
+              class="slider-range"
               v-model="minPriceVal"
               min="0"
               max="100"
@@ -78,6 +83,7 @@
           <div class="slider-container">
             <input
               type="range"
+              class="slider-range"
               v-model="maxPriceVal"
               min="100"
               max="200"
@@ -88,6 +94,7 @@
           <div class="slider-container">
             <input
               type="range"
+              class="slider-range"
               v-model="stepVal"
               min="0.1"
               max="10"
@@ -114,12 +121,11 @@
           </WarningDia>
         </div>
         <div class="chart-container">
-          <label v-if="loaded">Here is the Risk vs. Reward Graph</label>
           <line-chart v-if="loaded" :data="chartData" :options="options"></line-chart>
         </div>
       </div>
-      <div v-if="loaded" class="col-mb-12 col-lg-12 summary">
-        <div class="card-container mb-4">
+      <div v-if="loaded" class="summary">
+        <div class="card-container">
           <div class="card">
             <span></span>
             <div class="card-content">
@@ -146,12 +152,15 @@
     </div>
   </div>
 </template>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale } from 'chart.js'
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale)
+
 import WarningDia  from './WarningDia.vue';   
+
 export default {
   name: 'CodingChallenge',
   props: {
@@ -163,13 +172,14 @@ export default {
    },
   data(){
     const datasets = [];
-    this.optionsData.forEach((option,index)=>{
+    const localOptionsData = [...this.optionsData];//make a local copy
+    localOptionsData.forEach((option)=>{
+      option.number = 1; //initial number of contract
+      option.checked = false; 
       datasets.push({});
       });
-      this.optionsData.forEach((option,index)=>{
-        option.number = 1;
-      });
     return {
+      localOptionsData: localOptionsData,
       chartData: {
         labels: [],
         datasets: datasets,
@@ -214,9 +224,8 @@ export default {
     updateStepVal(val){
       this.stepVal = val;
     },
-
     toggleCheckbox(index){
-      this.optionsData[index].checked = !this.optionsData[index].checked;
+      this.localOptionsData[index].checked = !this.localOptionsData[index].checked;
     },
     generateChartData() {
       const profits = []
@@ -235,21 +244,21 @@ export default {
         'rgba(153, 102, 255, 1)'
       ]
       
-      this.optionsData.forEach((option,index)=>{
+      this.localOptionsData.forEach((option, index)=>{
         profits.push({id: index, data:[],backgroundColor:backgroundColors[index],borderColor:borderColors[index], breakEvenPoint:this.breakEvenPoints[index]})
       });
       const totalProfits = [];
       const prices = [];
       const totalBreakEvenPoint = [];
-      this.optionsData.filter(option=>option.checked).forEach((option,index)=>{
+      this.localOptionsData.filter(option=>option.checked).forEach((index)=>{
         totalBreakEvenPoint.push(this.breakEvenPoints[index]);
       })
 
       for (let price = this.minPriceVal; price <= this.maxPriceVal; price+=this.stepVal){
         prices.push(price);
         let totalProfit = 0;
-        for(let index = 0; index < this.optionsData.length; index++){
-          let option = this.optionsData[index];
+        for(let index = 0; index < this.localOptionsData.length; index++){
+          let option = this.localOptionsData[index];
           if(!option.checked){
             continue;
           }
@@ -274,7 +283,7 @@ export default {
           }
           profits[index].data.push(optionProfit);
           
-        };
+        }
         totalProfits.push(totalProfit);
       }
       const totalDataset = {
@@ -343,21 +352,30 @@ export default {
                   minRotation: 0
                 }
               }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: 'white',
             }
+          },
+          title: {
+            display: true,
+            text: 'Risk vs Reward Graph',
+            color: 'white', 
+            font: {
+              size: '20vmin',
+            }
+          }
          } 
+      }
       
-    },
-    customAlert(options){
-      return new Promise((resolve) => {
-          alert(`${options.title}\n\n${options.message}`);
-          resolve();
-        });
     },
     summary(){
       if (!this.chartData.datasets.length) {
         return [];
       }
-      this.summaryArray = this.chartData.datasets.map((dataset, index) => {
+      this.summaryArray = this.chartData.datasets.map((dataset) => {
         if (Array.isArray(dataset.data) && dataset.data.length) {
           return {
             label:dataset.label,
@@ -370,7 +388,7 @@ export default {
       
     },
     calculate(){
-      if (!this.optionsData.filter(option => option.checked).length){
+      if (!this.localOptionsData.filter(option => option.checked).length){
         this.showWarningDialog = true;
       }else{
         this.loaded = true;
@@ -381,38 +399,36 @@ export default {
     },
     showInstruction(){
       this.showInstructionDialog = true;
-    }
-    
+    },
   },
+  
 }
 </script>
 
 <style scoped>
 .option-profit-calculator{
   text-align: center;
-  align-items: center;
-  background-color: #000;
+  background-color: #000000c6;
 }
 /** title */
 .title-box{
-  padding: 2vmin 10vmin;
-  margin: auto 30vmin;
+  padding: 2vh 10vw;
+  margin: auto 20vw;
   background-color: #fff;
   border-radius: 4vmin;
   color:#66ddf7;
-  font-size: 8vmin;
   position: relative;
   overflow: hidden;
   z-index: 10;
 }
 .title-box::before{
   content: '';
-  width: 600%;
-  height: 600%;
-  background-color: #22292f;
+  width: 200vw;
+  height: 200vh;
+  background-color: #424242;;
   position: absolute;
-  left: -250%;
-  top: -250%;
+  left: -70vw;
+  top: -91vh;
   background-image: conic-gradient(transparent, #66ddf7, transparent 30%);
   z-index: -2;
   animation: rotate 3s linear infinite;
@@ -421,66 +437,77 @@ export default {
   to{
     transform: rotate(360deg);
   }
-}
+} 
 .title-box::after{
   content: '';
   position: absolute;
   inset: 0.5vmin;
-  background-color: #000;
-  border-radius: 3vmin;
+  background-color:#424242;;
+  border-radius: 4vmin;
   z-index: -1;
 }
 h1 {
-  font-size: 4vmin;
+  font-size: 3vmin;
 }
 p {
   font-size: 2vmin
 }
-.instruction-content{
-  text-align: left;
+.intro{
+  width: 2vmin;
+  height: 2vmin;
 }
-
-.col-lg-12, .col-md-12 {
-  position: relative;
-  width: 100%;
-
-}
-
-.strike-list{
-  align-items: center;
-}
-
-.strike-list-para{
+.strike-intro-para{
   margin-bottom: auto;
 }
+
+/* strike details */
+
+.strike-list{
+  width: 100%;
+  overflow-x: auto;
+  margin: 2vh auto;
+  text-align: center;
+}
+
 table{
 	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
 	font-size: 2vmin;
-	margin: 5vmin auto;
-	width: 60vmin;
-	border-collapse: collapse;
-	text-align: center;
   background-color: #282828;
   color:#D3D3D3;
   box-shadow: 0 0 2px #66ddf7,
               0 0 5px #66ddf7;
+  border: 1px solid #ccc;
+  width: 90%;
+  padding: 5vmin;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0 auto;
 }
 
-th{
-  font-size: 2vmin;
+table th{
+  font-size: 3vmin;
 	font-weight: bold;
 	color:  #34b7d4;
 	padding: 2vmin 5vmin;
 	border-bottom: 2px solid  #c9e4ea;
   background-color: #333333;
 }
-td{
+table td{
   color: #c9e4ea;
-	padding: 9px 8px 0px 8px;
+	padding: 3px 2px 0px 2px;
 }
-tr:nth-child(even){
+table tr:nth-child(even){
   background-color: #424242;
 }
+table tr{
+  border: 0.2vmin solid #ddd;
+  padding: 1vmin;
+}
+table th {
+    text-transform: uppercase;
+    font-size: 2vmin;
+    letter-spacing: 0.1vmin;
+  }
 
 tr:hover td
 {
@@ -496,7 +523,7 @@ input[type=number]{
   border: none;
   padding: 0;
   margin: 0;
-  width: 100%
+  width: 100%;
 }
 
 input[type=number]:focus {
@@ -504,27 +531,173 @@ input[type=number]:focus {
   color:#000;
 }
 
-.strike-visualization{
+/* switch */
+.switch {
+  display: inline-block;
+  height: 3.8vmin;
+  position: relative;
+  width: 7vmin;
+}
+
+.switch input {
+  display:none;
+}
+
+.slider {
+  background-color: #ccc;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .1s;
+}
+
+.slider:before {
+  background-color: #fff;
+  bottom: 0.4vmin;
+  content: "";
+  height: 3vmin;
+  width: 3vmin;
+  left: 0.3vw;
+  position: absolute;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #66ddf7;
+}
+
+input:checked + .slider:before {
+  transform: translateX(2.6vmin);
+}
+
+.slider.round {
+  border-radius: 4vmin;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+
+.checkbox-container {
+  margin: 0 auto;
+}
+
+/* slider-for x */
+.sliders-container {
+  display: flex; 
   align-items: center;
 }
 
-button{
-  text-align: center;
-  font-size: larger;
-  font-family: sans-serif;
-  border-radius: 10px;
-  background-color: rgba(225, 180, 171, 0.601);
-  padding: 10px;
-  margin: 10px;
-  border: 1px solid rgb(122, 132, 97);
-  box-shadow: 2px 2px 4px 1px rgb(174, 174, 159);
+.slider-container {
+  height:10%;
+  width: 20%;
+  margin: auto 8vw;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8vmin 0;
+  background:#d4dbdb;
+  border-radius: 3vmin;
+  box-shadow:
+    0.2vmin 0.2vmin 0.5vmin rgba(66, 173, 155, 0.1),
+    0.2vmin -0.2vmin 2vmin #889696;
 }
-label{
-  color: #fff;
-  font-size: larger;
+
+.slider-span {
   font-weight: bold;
+  font-size: 1vw;
+  display: inline-block;
+  text-align: left;
+  width: 3vw;
+  margin-left: 1vw;
+  color: #472b2bf9;;
+}
+
+.slider-range{
+  -webkit-appearance: none;
+  height: 0.2vmin;
+  width: 10vw;
+  background: #ddd;
+  background-color: #472b2b83;
+  outline: none;
+  border: none;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  opacity: 0.7;
+}
+.slider-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2.5vmin;
+  height: 2.5vmin;
+  background: radial-gradient(#64c6dc, #38775e, #afd550);
+  border-radius: 50%;
+  cursor: pointer;
+  }
+
+.slider-range::-moz-range-thumb {
+  cursor: pointer;
+}
+.slider-range:hover {
+  opacity: 1;
+}
+
+/* button */
+.generate-btn-container{
+  display: block;
+  align-items: center;
+}
+.btn{
+  text-align: center; 
+  width: 20vmin;
+  padding: 10px;
+  position: relative;
+  background-color: rgba(243, 251, 244, 0.882);
+  border-radius: 1vmin;
+  border: 2 px solid cadetblue;
+  color: rgb(37, 134, 137);
+  font-size: 3vmin;
+  text-decoration: none;
+  transition: all 1s;
+  overflow: hidden;
+  margin: 3vmin auto;
+}
+
+.btn:before{
+  content: '';
+  position: absolute;
+  display: block;
+  height: 100%;
+  width: 0%;
+  background-color: rgb(27, 95, 95);
+  top: 0;
+  left: -2vmin;
+  transform: skewX(45deg);
+  transition: all 1s;
+  z-index: -1;
+}
+.btn:hover::before{
+  width: 180%;
+}
+.btn:hover{
+  font-weight: bold;
+  color: rgb(220, 240, 239);
+  background-color: #0f453a;
   text-shadow: 0 0 15px #66ddf7,
-    0 0 45px #66ddf7;
+              0 0 45px #66ddf7;
+}
+
+
+/* visualization  */
+.strike-visualization{
+  align-items: center;
+  display: block;
+  position: relative;
 }
 
 
@@ -541,144 +714,7 @@ label{
   color: #fff;
 }
 
-.slider-span {
-  display: inline-block;
-  text-align: left;
-  width: 10%;
-  margin-left: 5%;
-  color: #D3D3D3;
-}
 
-.table-header{
-  font: 1em sans-serif;
-}
-
-.btn{
-  display: flex;
-  text-align: center; 
-  width: 20vmin;
-  padding: 10px;
-  position: relative;
-  background-color: rgba(45,45,45, 1);
-  border-radius: 2rem;
-  color: #999;
-  font-size: 2rem;
-  text-decoration: none;
-  transition: .5s;
-  overflow: hidden;
-  margin: 3vmin auto;
-}
-.btn:hover{
-  color: #66ddf7;
-  text-shadow: 0 0 15px #66ddf7,
-              0 0 45px #66ddf7;
-}
-.btn:before{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(#66ddf7, transparent, transparent);
-  opacity: 0;
-  transition: .5s;
-}
-.btn:hover::before{
-  opacity: 1;
-}
-.btn::after{
-  content: '';
-  background-color: rgba(45,45,45, 1);;
-  position: absolute;
-  inset: 2px;
-  border-radius: 48px;
-}
-.btn-span{
-  position: relative;
-  margin-left: 2vmin;
-  z-index: 1;
-}
-.btn-container{
-  margin: 0 45%;
-  justify-content: center;
-} 
-
-.switch {
-  display: inline-block;
-  height: 34px;
-  position: relative;
-  width: 60px;
-}
-
-.switch input {
-  display:none;
-}
-
-.slider {
-  background-color: #ccc;
-  bottom: 0;
-  cursor: pointer;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: .4s;
-}
-
-.slider:before {
-  background-color: #fff;
-  bottom: 4px;
-  content: "";
-  height: 26px;
-  left: 4px;
-  position: absolute;
-  transition: .4s;
-  width: 26px;
-}
-
-input:checked + .slider {
-  background-color: #66ddf7;
-}
-
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.checkbox-container {
-  margin: 0 auto;
-}
-.sliders-container {
-  display: flex; 
-  justify-content: space-between;
-}
-.slider-container {
-  margin: 2vmin 8vmin;
-}
-.slider-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.8vmin 0;
-    width: 30vmin;
-    background: linear-gradient(to bottom,  #5b949d, rgba(34, 62, 62, 0.736));
-    border-radius: 1vmin;
-    box-shadow:
-        0.5vmin 0.5vmin 0.5vmin rgba(66, 173, 155, 0.1),
-        0.5vmin -0.5vmin 2vmin #889696;
-
-}
-.slider-container span{
-  font-weight: bolder;
-}
 
 .summary{
   display: flex; 
@@ -699,7 +735,7 @@ input:checked + .slider:before {
 .card-container .card{
     position: relative;
     width: 30vmin;
-    height: 20vmin;
+    height: 100%;
     color: #fff;
     background: #111;
     display: flex;
@@ -777,6 +813,77 @@ input:checked + .slider:before {
     font: 1.1em/1.4em "";
     color: #fff;
     margin-bottom: 10px;
+}
+
+/* small screen */
+@media screen and (max-width: 768px) {
+
+table {
+  border: 0;
+}
+
+
+table thead {
+  display: none;
+}
+
+
+table tr {
+  margin-bottom: 10px;
+  display: block;
+  border-bottom: 2px solid #ddd;
+}
+
+
+table td {
+  display: block;
+  font-size: 13px;
+  border-bottom: 1px dotted #ccc;
+}
+
+
+table td:last-child {
+  border-bottom: 0;
+}
+
+
+table td:before {
+  content: attr(data-label);
+  float: left;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.sliders-container {
+  display: block;
+}
+.slider-container {
+  width: 80%;
+  margin: 2vmin auto;
+  height: 2vmin;
+}
+input[type=range]{
+  width: 50vw;
+  height: 0.5vmin;
+  
+}
+.slider-span {
+  font-weight: bold;
+  font-size: 1.8vw;
+  display: inline-block;
+  text-align: left;
+  width: 18vw;
+  margin-left: 1vw;
+  color: #472b2bf9;;
+}
+
+.card-container .card{
+  flex: 1 1 100%;
+  margin: 2vh 20vw;
+
+} 
+
+
 }
 
 </style>
