@@ -69,17 +69,25 @@
   .dialog-content {
     font-family: 'Courier New', Courier, monospace;
     font-weight: bolder;
+    color:black;
     background: white;
     padding: 20px;
     border-radius: 5px;
-    max-width: 300px;
+    max-width: 100vmin;
     width: 100%;
   }
-  
+
   .dialog-header,
   .dialog-body,
   .dialog-footer {
-    margin-bottom: 10px;
+    margin-bottom: 1vmin;
+  }
+  .dialog-header{
+    font-size: 3vmin;
+  }
+  .dialog-footer{
+    align-items: center;
+    font-size: 1.5vmin;
   }
   
   .dialog-warning {

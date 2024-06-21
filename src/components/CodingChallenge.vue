@@ -9,14 +9,11 @@
               <h3>Options Profit Calculator Instructions</h3>
             </template>
             <template>
-              <div class="instruction-content">
                 <p>1. Based on the details of four type of strike, you can check up tp four strike and choose the number of Contract for each option. </p>
                 <p>2. The <strong>Min Price</strong> and <strong>Max Price</strong> are the lower boundary and upper boundary of current ASSET PRICE range, and <strong>Step Change</strong> is the increment 
                 between the two range.</p>
                 <p>3. After that, click the <strong>Generate</strong> button, you will get the chart based on your choices, and the <strong>Max Profit</strong>, <strong>Max Loss</strong> and <strong>Break Even Points</strong>
                         for each strike and total options profits will be shown in the bottom. </p>
-              </div>
-      
             </template>
             <template v-slot:footer>
               <button @click="showInstructionDialog = false">Dismiss</button>
@@ -76,7 +73,7 @@
               max="100"
               @input="updateMinVal($event.target.value)"
             />
-            <span>Min Price: {{minPriceVal}}</span>
+            <span class="slider-span">Min Price: {{minPriceVal}}</span>
           </div>
           <div class="slider-container">
             <input
@@ -86,7 +83,7 @@
               max="200"
               @input="updateMaxVal($event.target.value)"
             />
-            <span>Max Price: {{maxPriceVal}}</span>
+            <span class="slider-span">Max Price: {{maxPriceVal}}</span>
           </div> 
           <div class="slider-container">
             <input
@@ -97,7 +94,7 @@
               step="0.1"
               @input="updateStepVal($event.target.value)"
             />
-            <span>Step Change: {{stepVal}}</span>
+            <span class="slider-span">Step Change: {{stepVal}}</span>
           </div> 
         </div>
         <div class="generate-btn-container">
@@ -123,86 +120,31 @@
       </div>
       <div v-if="loaded" class="col-mb-12 col-lg-12 summary">
         <div class="card-container mb-4">
-            <div class="container">
-              <div class="card front-face">
-                <header>
-                  <span class="logo">
-                    <h5>Max Profit</h5>
-                  </span>
-                </header>
-                <div class="card-details">
-                  <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxProfit }}</div>
-                </div>
-              </div>
-
-              <div class="card back-face">
-                <h6>
-                  For customer service all +977 4343 3433 or email at mastercard@gmail.com
-                </h6>
-                <span class="magnetic-strip"></span>
-                <div class="signature"><i>005</i></div>
-                <h5>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maiores, veritatis, ex? Vero nulla eaque culpa quia id, provident dolor distinctio delectus vitae eligendi dolore doloribus omnis porro voluptate aspernatur perferendis!</h5>
-              </div>
+          <div class="card">
+            <span></span>
+            <div class="card-content">
+              <h2>Max Profit</h2>
+              <p v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxProfit }}</p>
             </div>
           </div>
-          <!-- <div class="front" >
-            <h1 class="text-shadow">Max Profit:</h1>
-            <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxProfit }}</div>
+          <div class="card">
+            <span></span>
+            <div class="card-content">
+              <h2>Max Loss</h2>
+              <p v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxLoss }}</p>
+            </div>
           </div>
-          <div class="back">
-            <h2>Max Profit = max(Selling Price - Buying Price)</h2>
-            <p>Through incresing incomes from sales or other sources and reducing expenses</p>
-          </div>
-        </div> -->
-        <!-- <div class="card-container mb-4">
-          <div class="card-header">
-            <slot name="header">Max Profit:</slot>
-            <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxProfit }}</div>
-          </div>
-          <div class="card-content">
-            Max Profit = max(Selling Price - Buying Price)
-            <p>Through incresing incomes from sales or other sources and reducing expenses</p>
-          </div>
-          <div class="card-footer">
-            <slot name="footer"></slot>
-          </div>
-        </div> -->
-        <div class="card-container mb-4">
-          <div class="card-header">
-            <slot name="header">Max Profit:</slot>
-          </div>
-          <div class="card-body">
-            <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxProfit }}</div>
-          </div>
-          <div class="card-footer">
-            <slot name="footer"></slot>
+          <div class="card">
+            <span></span>
+            <div class="card-content">
+              <h2>Break Even Points</h2>
+              <p v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{summary.breakEvenPoint}}</p>
+            </div>
           </div>
         </div>
-        <div class="card-container mb-4">
-          <div class="card-header">
-            <slot name="header">Max Loss</slot>
-          </div>
-          <div class="card-body">
-            <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{ summary.maxLoss }}</div>
-          </div>
-          <div class="card-footer">
-            <slot name="footer"></slot>
-          </div>
-        </div>
-        <div class="card-container mb-4">
-          <div class="card-header">
-            <slot name="header">Break Even Points</slot>
-          </div>
-          <div class="card-body">
-            <div v-for="summary in summaryArray" :key="summary.label">{{ summary.label }}: {{summary.breakEvenPoint}}</div>
-          </div>
-          <div class="card-footer">
-            <slot name="footer"></slot>
-          </div>
-        </div>
-      </div>
-     </div> 
+      </div> 
     </div>
+  </div>
 </template>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -599,7 +541,7 @@ label{
   color: #fff;
 }
 
-span {
+.slider-span {
   display: inline-block;
   text-align: left;
   width: 10%;
@@ -609,41 +551,6 @@ span {
 
 .table-header{
   font: 1em sans-serif;
-}
-.row{
-  text-align: center;
-}
-.summary{
-  display: flex; 
-  justify-content: center;
-  gap: 20px;
-  padding: 20px;
-  flex-direction: row;
-}
-.card-container {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  background-color: #D3D3D3;
-  width: 40ch;
-}
-.card-header{
-  color: #D3D3D3;
-  font-weight: bold;
-  background-color: rgb(67, 53, 131);
-};
-.card-header slot{
-  color: #D3D3D3;
-}
-
-.card-footer {
-  padding: 16px;
-  background-color: #f5f5f5;
-}
-
-.card-body {
-  padding: 16px;
 }
 
 .btn{
@@ -772,192 +679,104 @@ input:checked + .slider:before {
 .slider-container span{
   font-weight: bolder;
 }
+
+.summary{
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+}
+
 .card-container{
-  padding: 25px;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 25px;
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(25px);
-  position: absolute;
-  backface-visibility: hidden;
-} 
-.back{
-  border: none;
-  padding: 15px 25px 25px 25px;
-  transform: rotateY(180deg);
-} 
-/* .card-container {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode';
     position: relative;
-    >.front,
-    >.back {
-        display: block;
-        transition-timing-function: cubic-bezier(.175, .885, .32, 1.275);
-        transition-duration: .8s;
-        transition-property: transform, opacity;
-    }
-    >.front {
-        transform: rotateY(0deg);
-        background-color: white;
-    }
-    >.back {
-        position: absolute;
-        opacity: 0;
-        top: 0px;
-        left: 0px;
-        width: 100%;
-        height: 100%;
-        transform: rotateY(-180deg);
-        background-color: #34b7d4;
-    }
-    &:hover {
-        >.front {
-            transform: rotateY(180deg);
-        }
-        >.back {
-            opacity: 1;
-            transform: rotateY(0deg);
-        }
-    }
-    &.flip-vertical {
-        >.back {
-            transform: rotateX(-180deg);
-        }
-        &:hover {
-            >.front {
-                transform: rotateX(180deg);
-            }
-            >.back {
-                transform: rotateX(0deg);
-            }
-        }
-    } */
-/* } */
-.card-container{
-  width: 100%;
-  min-height: 50vmin;
-  background: #121321;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5vmin 0;
+    flex-wrap: wrap;
 }
-.card-container::before, .card-container::after{
-  content: "";
-  position: absolute;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  /* background: linear-gradient(90deg, #9c27b0, #f3f5f5); */
-  perspective: 1000px;
-}
-.card-container::before{
-  transform: translate(-150px, -100px);
-}
-.card-container::after{
-  transform: translate(150px, 100px);
-}
-.container{
-  width: 375px;
-  height: 225px;
-  position: relative;
-  z-index: 1;
-  transition: 1s;
-  transform-style: preserve-3d;
-}
-.container:hover{
-  transform: rotateY(180deg);
-}
-.container .card{
-  padding: 25px;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 25px;
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(25px);
-  position: absolute;
-  backface-visibility: hidden;
-}
-.front-face header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.front-face .logo{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.front-face .logo img{
-  width: 45px;
-  margin-right: 10px;
-}
-h5{
-  font-size: 16px;
-  font-weight: 400;
-}
-.front-face .chip{
-  width: 45px;
-}
-.front-face .card-details{
-  margin-top: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-h6{
-  font-size: 10px;
-  font-weight: 400;
-}
-h5.number{
-  font-size: 18px;
-  letter-spacing: 1px;
-}
-h5.name{
-  margin-top: 20px;
-}
-.card.back-face{
-  border: none;
-  padding: 15px 25px 25px 25px;
-  transform: rotateY(180deg);
-}
-.card.back-face h6{
-  font-size: 8px;
-}
-.card.back-face .magnetic-strip{
-  position: absolute;
-  top: 40px;
-  left: 0;
-  width: 100%;
-  height: 45px;
-  background: #000;
-}
-.card.back-face .signature{
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 80px;
-  height: 40px;
-  width: 85%;
-  border-radius: 6px;
-  background: repeating-linear-gradient(#fff, #fff 3px, #efefef 0px, #efefef 9px);
-}
-.signature i{
-  padding: 4px 6px;
-  background: #fff;
-  border-radius: 4px;
-  color: #000;
-  font-size: 12px;
-  margin-right: -30px;
-  z-index: -1;
-}
-.card.back-face h5{
-  font-size: 8px;
-  margin-top: 15px;
+
+.card-container .card{
+    position: relative;
+    width: 30vmin;
+    height: 20vmin;
+    color: #fff;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 30px;
+    transition: .5s;
 } 
+.card-container .card:hover{
+  transform: translateY(-20px);
+}
+
+.card-container .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #d2a52b, #ff0058);
+}
+
+.card-container .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #ffbc00, #ff0058);
+    filter: blur(2vmin);
+}
+
+.card-container .card:nth-child(2):after,
+.card-ontainer .card:nth-child(2):before {
+    background: linear-gradient(315deg, #03a9f4, #ff0058);
+}
+
+.card-container .card:nth-child(3):after,
+.card-container .card:nth-child(3):before {
+    background: linear-gradient(315deg, #4dff03, #00d0ff);
+}
+
+.card-container .card span{
+    position: absolute;
+    inset: 0.5vmin;
+    background: rgb(0, 0, 0, 0.6);
+    z-index: 2;
+}
+
+.card-container .card span::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+}
+
+.card-container .card .card-content {
+    position: relative;
+    z-index: 10;
+    padding: 20px 40px;
+}
+
+.card-container .card .card-content h2 {
+    font: 2em "";
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.card-container .card .card-content p {
+    font: 1.1em/1.4em "";
+    color: #fff;
+    margin-bottom: 10px;
+}
+
 </style>
